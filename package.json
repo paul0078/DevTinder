@@ -1,0 +1,21 @@
+{
+  "name": "backend-new-micro",
+  "version": "1.0.0",
+  "description": "creating new back end micro project",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "master"
+  },
+  "keywords": [
+    "microservice"
+  ],
+  "author": "Mala",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

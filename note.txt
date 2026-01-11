@@ -1,0 +1,5 @@
+//npm init
+//npm i express
+//npm install -g nodemon => install globally
+//change it in the script , dev: nodemon index.js
+ // npm run dev

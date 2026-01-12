@@ -4,7 +4,7 @@
   "description": "creating new back end micro project",
   "main": "index.js",
   "scripts": {
-  
+    "start": "node index.js",
     "dev": "nodemon index.js" 
   },
   "repository": {

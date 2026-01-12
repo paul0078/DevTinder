@@ -3,3 +3,19 @@
 //npm install -g nodemon => install globally
 //change it in the script , dev: nodemon index.js
  // npm run dev
+
+
+ index.js
+ /*
+    here is the correct postion for routing
+
+    "/"
+   1. if u take /  thing at top it always execute "Iam express "
+    if i change /hello , /test Also  it wont work
+   2. so keep the default "/" one at the all route 
+     below so it work good work for all Route
+  
+     "/test" & "/test/50"
+    1. and one more order if u bring /test/id below the /test , that /test/50  it wont work 
+    so keep /test/50 top of the /test
+*/

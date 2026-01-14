@@ -2,10 +2,10 @@
   "name": "backend-new-micro",
   "version": "1.0.0",
   "description": "creating new back end micro project",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js" 
+    "start": "node app.js",
+    "dev": "nodemon app.js" 
   },
   "repository": {
     "type": "git",

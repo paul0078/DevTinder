@@ -14,6 +14,10 @@ const UserDetails = new Schema({
         minLength:1,
         maxLength: 200
     },
+    password: {
+        type: String,
+        required: true
+    },
     gender: {
        type: String,
        required: true,

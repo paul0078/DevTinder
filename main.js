@@ -24,7 +24,7 @@ app.post("/signUp", async (req, res) => {
 
   try {
     await Validation(user);
-
+    //it convert the password to hash password
     const passwordhas = await bcrypt.hash(user.password, 10);
     const {
       firstName,
@@ -66,9 +66,11 @@ app.post("/signUp", async (req, res) => {
 app.post("/login", async(req,res) => {
       try{
         let {email , password} = req.body;
+        // finding email in data base to fetch user details
         let dbdetails =  await UserModels.findOne({email});
 
         console.log("display details", dbdetails);
+        // it compares user entered password and data base password checks boolean value
         let haspassword = await bcrypt.compare(password, dbdetails.password);
          
         if(haspassword){

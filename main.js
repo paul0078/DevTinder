@@ -3,12 +3,16 @@ const Database = require("./src/config/database");
 const UserModels = require("./src/models/schema");
 const validator = require("validator");
 const { Validation } = require("./src/utils/validations");
+const cookieparser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const {userAuthReUse} = require("./src/utils/middleware");
 const bcrypt = require("bcrypt");
 const app = express();
 
 // this helps to convert json data to javascript object it  acts
 // as middleware or plugin and this javascript object sends back to req.body
 app.use(express.json());
+app.use(cookieparser());
 
 // create
 app.post("/signUp", async (req, res) => {
@@ -26,15 +30,7 @@ app.post("/signUp", async (req, res) => {
     await Validation(user);
     //it convert the password to hash password
     const passwordhas = await bcrypt.hash(user.password, 10);
-    const {
-      firstName,
-      lastName,
-      gender,
-      age,
-      email,
-      skills,
-      photoUrl,
-    } = user;
+    const { firstName, lastName, gender, age, email, skills, photoUrl } = user;
     let userDetails = new UserModels({
       firstName,
       lastName,
@@ -44,7 +40,7 @@ app.post("/signUp", async (req, res) => {
       email,
       skills,
       photoUrl,
-     });
+    });
 
     await userDetails.save();
     res.status(200).send("Saved Successfully");
@@ -62,35 +58,85 @@ app.post("/signUp", async (req, res) => {
   }
 });
 
-//login api 
-app.post("/login", async(req,res) => {
-      try{
-        let {email , password} = req.body;
-        // finding email in data base to fetch user details
-        let dbdetails =  await UserModels.findOne({email});
-
-        console.log("display details", dbdetails);
-        // it compares user entered password and data base password checks boolean value
-        let haspassword = await bcrypt.compare(password, dbdetails.password);
-         
-        if(haspassword){
-             return res.status(200).json({
-                message: "User Login Successfully!!"
-              })
-         }
-         if(!haspassword){
-             return  res.status(401).json({
-                message: "invalid Credentials !!"
-              })
-         }
-        
-       
-      }catch(err){
-         res.status(500).send({
-          message: "Server Error",
-          err: err.message
-         })
+//login api
+app.post("/login", async (req, res) => {
+  try {
+    let { email, password } = req.body;
+          // finding email in data base to fetch user details
+          let dbuser = await UserModels.findOne({ email });
+          if (!dbuser) {
+            throw new Error("InvalidUser");
+          }
+      
+          // it compares user entered password and data base password checks boolean value
+          // let haspassword = await bcrypt.compare(password, dbuser.password);
+           let haspassword = await dbuser.passwordbcrypt(password);
+    if (haspassword) {
+      //token genrates using jwt // (hiding user id,secret key should be in env file, expiry time can be added)
+      let token = await dbuser.getJwtToken();
+      // let token = await jwt.sign({ id: dbuser._id }, "DevTinder$@!#432", {
+      //   expiresIn: "1h",
+      // });
+      if (!token) {
+        throw new Error("Invalid Token");
       }
+
+      // set cookie in the browser {expires : ,httpOnly: true} use httOnly in production
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 1 * 3600000), 
+      }); // Cookie Expires in One Hour
+      // res.cookie(
+      //   "token",
+      //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NSIsIm5hbWUiOiJNYWxhIiwiZXhwIjo5OTk5OTk5OTk5fQ.dummysignature123456",
+      // );
+      return res.status(200).json({
+        message: "User Login Successfully!!",
+      });
+    } else {
+      return res.status(401).json({
+        message: "invalid Credentials !!",
+      });
+    }
+  } catch (err) {
+    res.status(500).send({
+      // message: "Server Error",
+      err: err.message,
+    });
+  }
+});
+
+//profiledetails
+app.get("/profile", userAuthReUse, async (req, res) => {
+  try {
+    const user_name = req.userName;
+    const token = req.token;
+    res.status(200).json({
+      token: token,
+      msg: `${user_name.firstName} Profile details Success !!`,
+    });
+  } catch (err) {
+    res.status(401).json({
+      msg: err.message,
+    });
+  }
+});
+
+//without middleware useAuthReUse => if no token => it work no security => it wont throw error => show success
+// with missleware useAuthReUse =>  if no token => it wont work no security => throw error
+app.get("/gettestdetails",userAuthReUse, async (req,res) => {
+   
+   let user_name = req.userName;
+   
+   try{
+    res.status(200).json({
+      msg:`${user_name.firstName} tested`
+    });
+   }catch(err){
+      res.status(400).json({
+        msg: err.message
+      })
+   }
+   
 });
 
 // feed Api => fetch all Data
@@ -194,3 +240,12 @@ Database()
   .catch(() => {
     console.log("mongoose Connection failed !!");
   });
+
+/*
+ jwt : holds the information about the user 
+ there are 3 colors green white blue
+  header: holds the algorithm and token type
+  payload: holds the user information
+  signature: used to verify the message is not changed
+
+*/

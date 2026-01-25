@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const {Schema} = mongoose;
 
 const UserDetails = new Schema({
@@ -58,16 +60,26 @@ const UserDetails = new Schema({
          }
        }
     }
-    
-    
 },
 {
     timestamps: true  // it automatically adds updated Date for patch and created , updated for post
 }
-
 )
 
+UserDetails.methods.getJwtToken = async function(){
+      let dbuser = this; // instence of user model
+      let token = await jwt.sign({ id: dbuser._id }, "DevTinder$@!#432", {
+        expiresIn: "1h",
+      });
+      return token;
+    
+}
 
+UserDetails.methods.passwordbcrypt = async function(passInputbyuser){
+    let dbuser = this; // instence of user model
+    let crypt = await bcrypt.compare(passInputbyuser, dbuser.password);
+    return crypt;
+}
 
 const UserModels = mongoose.model("UserInfo",UserDetails); 
 // DevTinder DataBase   Under UnserInfo Collection will Create

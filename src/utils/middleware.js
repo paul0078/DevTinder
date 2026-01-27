@@ -54,6 +54,7 @@ const userAuthReUse = async (req, res, next) => {
 
     req.token = token;
     req.userName = user;
+      
     next();
   } catch (err) {
     res.status(401).json({

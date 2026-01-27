@@ -72,7 +72,6 @@ UserDetails.methods.getJwtToken = async function(){
         expiresIn: "1h",
       });
       return token;
-    
 }
 
 UserDetails.methods.passwordbcrypt = async function(passInputbyuser){

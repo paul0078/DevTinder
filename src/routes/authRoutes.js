@@ -99,7 +99,7 @@ authRoute.post("/login", async (req, res) => {
 authRoute.post("/logout", async(req,res) => {
 
    res.cookie("token", null , {
-    expires: new Date(Date.now())
+    expires: new Date(Date.now()) // current date
    }).status(200).json({
     msg: "Log Out Success !!"
    })

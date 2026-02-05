@@ -82,4 +82,4 @@ UserDetails.methods.passwordbcrypt = async function(passInputbyuser){
 
 const UserModels = mongoose.model("UserInfo",UserDetails); 
 // DevTinder DataBase   Under UnserInfo Collection will Create
-module.exports = UserModels
+module.exports = UserModels;

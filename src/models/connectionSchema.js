@@ -4,11 +4,11 @@ const { Schema } = mongoose;
 const ConnectionRequestModule = new Schema(
   {
     fromUserId: {
-      type: mongoose.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       required: true,
     },
     toUserId: {
-      type: mongoose.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       required: true,
     },
     status: {
@@ -25,17 +25,25 @@ const ConnectionRequestModule = new Schema(
   },
 );
 
+// refrence => https://www.mongodb.com/docs/php-library/current/indexes/compound-index/
+//compound index => 1 is asssending order , so it create uniq index => if we not sending id for each api , api will go Very slow
+ConnectionRequestModule.index( { fromUserId: 1, toUserId: 1 },{ unique: true }) // use either fromUserId : 1 or unique 
+
 // ✅ self request validation
 // test cases  => dhoni send his same id for the api he is sending connection himself should Fail
 //pre present in mongoose document middleware
-ConnectionRequestModule.pre('save', function() {
-    
-    if(this.fromUserId.equals(this.toUserId)){
-       throw new Error("self request not allowed !!")
-    }
+// next is not needed for mongose v6+ more version , below that v6 version next is needed
+ConnectionRequestModule.pre('save', async function() {
+  const  user_Connections = this;
+  if (user_Connections.fromUserId.equals(user_Connections.toUserId)) {
+    throw new Error("You cannot send connection request to yourself");
+  }
+
 });
 
 
-const FinalConnection = new mongoose.model("connection", ConnectionRequestModule);
+const FinalConnection = mongoose.model("connection", ConnectionRequestModule);
 
 module.exports = {FinalConnection};
+
+

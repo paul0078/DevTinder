@@ -32,3 +32,61 @@ mongodb password
 ================
 mala_daisy@123
 mala_daisy@2499
+
+
+
+
+// i was getting error for next in connectschema in pre => resolved solution and reson
+/*
+  ✅ Why You Got next is not a function
+
+In modern Mongoose (v6+), pre('save') middleware can be:
+
+Style 1 — Promise / async style (recommended)
+
+👉 Do NOT use next
+👉 Throw error directly
+
+ConnectionRequestModule.pre('save', function () {
+  if (this.fromUserId.equals(this.toUserId)) {
+    throw new Error("You cannot send connection request to yourself");
+  }
+});
+
+
+✔ This is correct
+✔ No next needed
+✔ Throw works properly
+✔ Cleaner
+
+Style 2 — Callback style (older pattern)
+
+Only works when Mongoose expects callback middleware:
+
+ConnectionRequestModule.pre('save', function (next) {
+  if (this.fromUserId.equals(this.toUserId)) {
+    return next(new Error("You cannot send connection request to yourself"));
+  }
+  next();
+});
+
+
+But if your Mongoose version is using promise-style middleware internally → next will be undefined → error.
+
+That’s why you saw:
+
+next is not a function ❌
+
+✅ Best Fix — Use Throw Only (no next)
+
+Use this version 👇
+
+ConnectionRequestModule.pre('save', function () {
+  if (this.fromUserId.equals(this.toUserId)) {
+    throw new Error("You cannot send connection request to yourself");
+  }
+});
+
+
+Done ✅
+*/

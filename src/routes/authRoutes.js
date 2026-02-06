@@ -1,8 +1,8 @@
 const { Validation } = require("../utils/validations");
-const app = require("express");
+const express = require("express");
 const bcrypt = require("bcrypt");
 const UserModels = require("../models/schema");
-const authRoute = app.Router();
+const authRoute = express.Router();
 
 // create
 authRoute.post("/signUp", async (req, res) => {
@@ -60,7 +60,7 @@ authRoute.post("/login", async (req, res) => {
       
           // it compares user entered password and data base password checks boolean value
           // let haspassword = await bcrypt.compare(password, dbuser.password);
-           let haspassword = await dbuser.passwordbcrypt(password);
+          let haspassword = await dbuser.passwordbcrypt(password);
     if (haspassword) {
       //token genrates using jwt // (hiding user id,secret key should be in env file, expiry time can be added)
       let token = await dbuser.getJwtToken();

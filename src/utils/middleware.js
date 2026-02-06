@@ -9,7 +9,7 @@ const userAuth = (req, res, next) => {
   if (!isToken) {
     res.status(401).send("UnAuthorised");
   } else {
-    console.log("Authorized");
+    //console.log("Authorized");
     next();
   }
 };
@@ -22,13 +22,13 @@ const userAdmin = (req, res, next) => {
   if (!isToken) {
     res.status(401).send("Admin Access UnAuthorised");
   } else {
-    console.log("Admin Authorized");
+    //console.log("Admin Authorized");
     next();
   }
 };
 
 const commonUser = (req, res, next) => {
-  console.log("common function fetched");
+  //console.log("common function fetched");
   next();
 };
 

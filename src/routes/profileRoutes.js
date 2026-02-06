@@ -76,7 +76,7 @@ profileRoute.patch("/profile/changepassword", userAuthReUse , async(req,res) => 
          { runValidators: true, new: true }
        );
        
-       console.log("password change", updatedUser);
+      //  console.log("password change", updatedUser);
        res.status(200).json({
          msg: "Password updated successfully!",
          user: updatedUser

@@ -10,6 +10,8 @@ const UserDetails = new Schema({
         required: true,
         minLength: 3,
         maxLength: 200
+        //index: true // either use index or unique it give unique index and makes the data saves in assending order (compund index)
+        //unique: true
     },
     lastName: {
         type: String,
@@ -65,6 +67,11 @@ const UserDetails = new Schema({
     timestamps: true  // it automatically adds updated Date for patch and created , updated for post
 }
 )
+
+
+//compound index => 1 is asssending order , so it create uniq index => if we not sending id for each api , api will go Very slow
+//which store the saved data in assending order , and search happens in assending order refer in mongo db
+UserDetails.index( { firstName: 1 , lastName: 1 },{ unique: true })
 
 UserDetails.methods.getJwtToken = async function(){
       let dbuser = this; // instence of user model

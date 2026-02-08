@@ -7,7 +7,10 @@ const connectionRoute = app.Router();
 //without middleware useAuthReUse => if no token => it work no security => it wont throw error => show success
 // with missleware useAuthReUse =>  if no token => it wont work no security => throw error
 ///gettestdetails/:status/:userId => /:status is dynamic it might be intrested or ignored /: this is user to id
-connectionRoute.get("/gettestdetails/:status/:userId", userAuthReUse, async (req, res) => {
+
+
+//sending ------from user (ignore / intrest) ------ To user
+connectionRoute.post("/gettestdetails/:status/:userId", userAuthReUse, async (req, res) => {
   try {
     let user_name = req.userName;
     let from_UserId = user_name._id; // login person took from userAuth
@@ -60,7 +63,9 @@ connectionRoute.get("/gettestdetails/:status/:userId", userAuthReUse, async (req
       status: connection_Status
     })
 
-    
+     if(!user_Connections){
+      throw new Error("Connection is not Valid !!");
+    }
    
     await user_Connections.save(); // saving in new request
    
@@ -73,6 +78,50 @@ connectionRoute.get("/gettestdetails/:status/:userId", userAuthReUse, async (req
     });
   }
 });
+
+
+//♾️🕧Review Api  --------- to User (if intrested => Accepted / Rejected)----- From User
+connectionRoute.post("/gettestdetails/review/:status/:requestId", userAuthReUse , async (req, res) => {
+  try{
+    const loginId = req.userName;
+    
+    const { status,requestId } = req.params;
+
+   
+    // ✅ status allowed only
+    let IsStatusCheck = ["Accepted", "Rejected"]
+
+    if(!IsStatusCheck.includes(status)){
+       throw new Error("Wrong status Checking !!")
+    }
+   
+    let connectionRequestData = await FinalConnection.findOne({
+      _id: requestId, // in postman dont send user id send FinalConnection data Created id
+      toUserId: loginId._id, // 
+      status: "Intrested" // check the status is intrested
+    })
+   
+    if(!connectionRequestData){
+      throw new Error("Connection is not Valid !!");
+    }
+
+    
+   
+   // ✅ after checking status is intrested assign param status into the connectionData
+   connectionRequestData.status = status;
+
+    const data = await connectionRequestData.save()
+   
+    res.status(200).json({
+      msg: `User is ${status} in Your Profile`,
+      data: data
+    })
+  }catch(err){
+    res.status(404).json({
+        msg: err.message || "Something Went Wrong !!"
+    })
+  }
+})
 
 module.exports = {
   connectionRoute,

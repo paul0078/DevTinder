@@ -4,6 +4,8 @@ const cookieparser = require("cookie-parser");
 const { authRoute } = require("./src/routes/authRoutes");
 const { connectionRoute } = require("./src/routes/connectionRequest");
 const { profileRoute } = require("./src/routes/profileRoutes");
+const { ReviewRoute } = require("./src/routes/userRoutes");
+
 // const jwt = require("jsonwebtoken");
 // const bcrypt = require("bcrypt");
 const app = express();
@@ -17,6 +19,7 @@ app.use(cookieparser());
 app.use("/",authRoute);
 app.use("/",connectionRoute);
 app.use("/",profileRoute);
+app.use("/",ReviewRoute);
 
 
 Database()

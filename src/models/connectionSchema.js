@@ -6,10 +6,12 @@ const ConnectionRequestModule = new Schema(
     fromUserId: {
       type: Schema.Types.ObjectId,
       required: true,
+      ref: "UserInfo" // This is the option that populate looks at to determine the foreign collection it should query.
     },
     toUserId: {
       type: Schema.Types.ObjectId,
       required: true,
+      ref: "UserInfo"
     },
     status: {
       type: String,

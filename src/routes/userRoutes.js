@@ -2,6 +2,7 @@
 const express = require("express");
 const ReviewRoute = express.Router();
 const { FinalConnection } = require("../models/connectionSchema");
+const UserModels  = require("../models/schema");
 const { userAuthReUse } = require("../utils/middleware");
 
 const commonFields = "firstName lastName gender age skills photoUrl";
@@ -82,28 +83,50 @@ ReviewRoute.get("/user/connections", userAuthReUse, async (req, res) => {
 //feed api
 ReviewRoute.get("/user/feed", userAuthReUse, async (req, res) => {
   try {
-    const loginId = req.userName;
-    let connectionData = await FinalConnection.find({
-      $and: [
-        {
-          $or: [
-            {
-              fromUserId: loginId._id, // Sent connection Request 
-            },
-            {
-              toUserId: loginId._id, // Recieved Connection Request 
-            }
-          ],
-        },
-        {
-          status: { $nin: ["Accepted", "ignore", "Intrested"] },
-        },
-      ],
-    });
+    const loginId = req.userName._id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    /*
+      Use Cases:
+      * ignore not allowed
+      * intrest sent not allowed
+      * intrest recieved not allowed
+      * self not allowed
+    */
+   
+    /* sent , recieved */
+    let connectionRequest = await FinalConnection.find({
+       $or:[
+        { fromUserId: loginId }, // from sending request
+        { toUserId: loginId } //recieving Request 
+       ]
+    }).select("fromUserId toUserId status")
 
+    let hidingData = new Set(); //this is for duplication remove
+    
+    // Add current user to hiding data
+    hidingData.add(loginId.toString());
+     
+    //there will be duplication Id , 
+    connectionRequest.forEach((ele) => {
+      hidingData.add(ele.fromUserId.toString()); 
+      hidingData.add(ele.toUserId.toString())
+    })
+
+    //fetching other data except hiddingData 
+    let finalConnectionData = await UserModels.find({
+      _id: { $nin: Array.from(hidingData) }
+    })
+    .select(commonFields)
+    .skip(skip)
+    .limit(limit)
+    ;
+
+    
     res.status(200).json({
       message: "All Data Fetched Successfully",
-      data: connectionData,
+      data: finalConnectionData,
     });
   } catch (err) {
     res.status(505).json({
@@ -115,13 +138,34 @@ ReviewRoute.get("/user/feed", userAuthReUse, async (req, res) => {
 module.exports = { ReviewRoute };
 
 /*
-   Feed Api for get all list in the main i will give you few conditions
-   --------------------------------------------------------------------
+Feed Api for get all list in the main i will give you few conditions
+--------------------------------------------------------------------
 
-   conditions
-   ==========
-   1. if currentuser is ignored that users should not be in list
-   2. if currentuser  is already friend means accepted by some one that user should not be in list
-   3. if currentuser is sent intrest thats users should not be there
+conditions
+==========
+✔ people user sent request to
+✔ people user received request from
+✔ accepted connections
+✔ ignored connections
+✔ self
+
+
+Steps
+=====
+User calls /user/feed?page=1&limit=10
+        ↓
+Auth middleware validates user
+        ↓
+Get logged user ID
+        ↓
+Find all connection records involving user
+        ↓
+Build hide list (self + requested + connected)
+        ↓
+Query users NOT in hide list
+        ↓
+Apply pagination
+        ↓
+Return feed users
 
 */
